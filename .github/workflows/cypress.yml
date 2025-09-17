@@ -7,15 +7,12 @@ on:
     branches: [master, main]
   workflow_dispatch:
 
-permissions:
-  contents: write
-  pages: write
-  id-token: write
-
 jobs:
-  e2e:
+  cypress-run:
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        containers: [1, 2]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -29,57 +26,41 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Clean old reports
+      - name: Clean old artifacts
         run: npm run cy:clean
 
-      - name: Run Cypress tests
-        run: npm run cy:run
+      - name: Run UI Tests
+        uses: cypress-io/github-action@v6
+        with:
+          browser: chrome
+          headless: true
+          record: false
+          parallel: true
+          group: 'UI Tests'
+          spec: |
+            cypress/e2e/features/ui/*.feature
 
-      - name: Merge mochawesome reports
-        if: always()
-        run: |
-          mkdir -p cypress/reports
-          npm run cy:report:merge
+      - name: Run API Tests
+        uses: cypress-io/github-action@v6
+        with:
+          browser: chrome
+          headless: true
+          record: false
+          parallel: true
+          group: 'API Tests'
+          spec: |
+            cypress/e2e/features/api/*.feature
 
-      - name: Generate mochawesome HTML report
-        if: always()
-        run: npm run cy:report:generate
-
-      - name: Upload videos & screenshots
-        if: always()
+      - name: Upload screenshots on failure
         uses: actions/upload-artifact@v4
+        if: failure()
         with:
-          name: cypress-artifacts
-          path: |
-            cypress/videos/**
-            cypress/screenshots/**
-          if-no-files-found: ignore
+          name: cypress-screenshots
+          path: cypress/screenshots
 
-      - name: Upload HTML report
-        if: always()
+      - name: Upload videos
         uses: actions/upload-artifact@v4
+        if: always()
         with:
-          name: mochawesome-report
-          path: cypress/reports/html-report
-          if-no-files-found: ignore
-
-  deploy-report:
-    needs: e2e
-    if: always()
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Download HTML report
-        uses: actions/download-artifact@v4
-        with:
-          name: mochawesome-report
-          path: public
-
-      - name: Deploy report to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./public
+          name: cypress-videos
+          path: cypress/videos

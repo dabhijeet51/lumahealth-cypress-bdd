@@ -9,14 +9,6 @@ export default defineConfig({
     specPattern: "cypress/e2e/features/**/*.feature",
     pageLoadTimeout: 60000,
     defaultCommandTimeout: 30000,
-    reporter: "cypress-mochawesome-reporter",
-    reporterOptions: {
-      reportDir: "cypress/reports",
-      overwrite: false,
-      html: false,
-      json: true,
-      timestamp: "mmddyyyy_HHMMss"
-    },
     async setupNodeEvents(on, config) {
       await addCucumberPreprocessorPlugin(on, config);
       on(
