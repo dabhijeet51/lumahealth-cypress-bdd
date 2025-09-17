@@ -1,7 +1,8 @@
 import { Given, When } from "@badeball/cypress-cucumber-preprocessor";
 
 Given("I open the demoqa homepage", () => {
-  cy.visit("/");
+  cy.visit("/", { timeout: 120000 });
+  cy.get('body', { timeout: 30000 }).should('be.visible');
 });
 
 When(
