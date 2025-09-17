@@ -23,16 +23,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Chrome dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libnss3-dev libxss1 libasound2-dev libxtst6 xauth xvfb
-
       - name: Run Cypress tests
-        run: npx cypress run --browser chrome
+        run: npx cypress run
         env:
           CYPRESS_CACHE_FOLDER: ~/.cache/Cypress
-          DISPLAY: :99
 
       - name: Upload screenshots on failure
         uses: actions/upload-artifact@v4
