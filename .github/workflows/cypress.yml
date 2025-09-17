@@ -10,9 +10,6 @@ on:
 jobs:
   cypress-run:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        containers: [1, 2]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -26,30 +23,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Clean old artifacts
-        run: npm run cy:clean
-
-      - name: Run UI Tests
-        uses: cypress-io/github-action@v6
-        with:
-          browser: chrome
-          headless: true
-          record: false
-          parallel: true
-          group: 'UI Tests'
-          spec: |
-            cypress/e2e/features/ui/*.feature
-
-      - name: Run API Tests
-        uses: cypress-io/github-action@v6
-        with:
-          browser: chrome
-          headless: true
-          record: false
-          parallel: true
-          group: 'API Tests'
-          spec: |
-            cypress/e2e/features/api/*.feature
+      - name: Run Cypress tests
+        run: npx cypress run --browser chrome
 
       - name: Upload screenshots on failure
         uses: actions/upload-artifact@v4
@@ -57,6 +32,7 @@ jobs:
         with:
           name: cypress-screenshots
           path: cypress/screenshots
+          if-no-files-found: ignore
 
       - name: Upload videos
         uses: actions/upload-artifact@v4
@@ -64,3 +40,4 @@ jobs:
         with:
           name: cypress-videos
           path: cypress/videos
+          if-no-files-found: ignore
